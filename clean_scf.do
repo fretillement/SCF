@@ -121,77 +121,50 @@ label var year "Survey Year"
 * "Urbanicity" and "Census Region" are not included in the public dataset
 
 *Financial info 
-	*Income
-						   
-		   //(1-Step Process for years <=2001)//
-generate income = max(0, x5729) 
+	*Income: IMPORTANT: THE FOLLOWING STEP FOR YEARS BEFORE 2001 ONLY
+	gen income = max(0, X5729) 
+	label variable income "Income"
 
-label variable income "Income"
+	*Income components 
+		*Wage income								
+		generate inc_wage = X5702
+		label variable inc_wage "Income from wages"
+		
+		*Interest/dividend income					
+		generate inc_intdiv = X5706 + X5708 + X5710
+		label variable inc_intdiv "Income from interests/dividends"
+        
+		*Business, farm, self-employment income					
+		generate inc_busfarmself = X5704 + X5714
+		label variable inc_busfarmself "Business/ farm/ self-employment income"
+        
+		*Capital gains income				
+		generate inc_capgains = X5712						
+		label variable inc_capgains "Income from capital gains"
 
+		*Social security/retirement income
+		gen inc_retss = X5722
+		label variable inc_retss "Social security/ retirement income" 
+		
+		*Transfers or other income
+		gen inc_transoth = X5722
+		label variable inc_transoth "Transfer or other income" 
+		
+		*Components combined (total income) 
+		gen inc_totcomp = X5702 + X5704 + X5714 + X5706 + X5708 + X5710 + X5712 + X5722 + X5716 + X5718 + X5720 + X5724
+		label variable inc_totcomp "Value of income components combined"
 
-						  //Income Components//
-		                     //Wage Income//
-							 
-generate wage_income = x5702
-label variable wage_income "Income from Wages"
+	*Normal income, yearly - HOW IS THIS DIFFERENT FROM income VAR?
+	*gen income_normal = X5729
+		
+	*Income percentiles
+	gen inc_pctile = income, n(6)
+	label define inc_pctile 1 "Less than 20" 2 "20-39.9" 3 "40-59.9" 4 "60-79.9" 5 "80-89.9"  6 "90-100"
+	label var inc_pctile "Income percentile"
 
-                    //Interest/Dividend Income//
-					
-generate interest_dividend_income = x5706 + x5708 + x5710
-label variable interest_dividend_income "Income from Interests/Dividends"
-
-                    //Business, Farm, Self-Employment Income//
-					
-generate business_farm_income = x5704 + x5714
-label variable business_farm_income "Business/Farm Income"
-
-                        //Capital Gains Income//
-						
-generate capital_gains_income = x5712						
-label variabl capital_gains_income "Income from Capital Gains"
-
-              //Social Security/Retirement Income//
-			  
-generate ss_retirement_income = x5722
-label variable ss_retirement_income "Social Security/Retirement Income"			  						   
-
-	 			   //Transfers or Other Income//
-
-generate transfer_other_income = x5716 + x5718 + x5720 + x5724
-label variable transfer_other_income "Transfer or Other Income"				   
-						   						   						   
-						   //Components Combined//
-generate income_components = x5702 + x5704+x5714 +x5706+x5708+x5710 +x5712+x5722 ///
-                    + x5716+x5718+x5720+x5724
-						   
-						   
-				       //Normal Year Income Variable//
-					   
-generate normal_income = x5729
-
-
-                      //"Percentile of Income" Variable//
-
-
-sort income normal_income, stable
-
-generate income2 = 1 in 1/2746
-replace income2 = 2 in 2747/5545
-replace income2 = 3 in 5546/8461
-replace income2 = 4 in 8462/11488
-replace income2 = 5 in 11489/13393
-replace income2 = 6 in 13394/19530   
-
-label define income2 1 "Less than 20" 2 "20-39.9" 3 "40-59.9" 4 "60-79.9" 5 "80-89.9"  6 "90-100"
-
-label values income2 income2
-
-label variable income2 "Percentile of Income"
-rename income2 income_percentile
-
-
-                      //Families that Save//
-					
+	*Saving habits
+	gen saving = X7510
+	replace saving = X7508 if
 
 generate saving = x7510
 replace saving = x7508 if x7508>0
