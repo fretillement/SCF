@@ -46,12 +46,12 @@ label var year "Survey Year"
 
 	*Education	
 	gen edu = 4 if X5904 //College degree
-	replace edu = 3 if x5901>=13 & X5904==5 //Some college
-	replace edu = 2 if x5901<=12 & X5902 //High school diploma or equivalent 
-	replace edu = missing(edu) //No high school diploma
-	label define edu "No High School Diploma" 2 "High School Diploma" 3 "Some College" 4 "College Degree" 
+	replace edu = 3 if X5901>=13 & X5904==5 //Some college
+	replace edu = 2 if X5901<=12 & X5902 //High school diploma or equivalent 
+	replace edu = 1 if missing(edu) //No high school diploma
+	label define edu 1 "No High School Diploma" 2 "High School Diploma" 3 "Some College" 4 "College Degree" 
 	label var edu "Education category of head"
-
+	
 	*Marital status 
 	gen mar = inlist(X8023, 1, 2) //Married or living together
 	replace mar = 0 if !inlist(X8023, 1, 2) //Never married nor living together
@@ -60,127 +60,68 @@ label var year "Survey Year"
 
 	*Labor force participation
 	gen lfpart = (inrange(X4100, 11, 30) | (X4100 == 97))  
-	label define lfpart "Working in some way" 0 "Not Working at all"
+	label define lfpart 1 "Working in some way" 0 "Not Working at all"
 	label variable lfpart "Labor force participation of head"
 
 	*Children
 	gen children = inlist(4, X108, X114, X120, X126, X132, X202, X214, X220, X226) 
 	label define children 1 "Has at least one child" 0 "Has no children"
 	label variable children "Children in the household"
-
-                            //Family Structure//
 							
-gen family_structure = 0
-replace family_structure = 1 if  marital_status ==2 & children==1
-replace family_structure = 2 if marital_status ==2 & children==0 & age<=3
-replace family_structure = 3 if marital_status ==2 & children==0 & age>3
-replace family_structure = 4 if marital_status ==1 & children==1
-replace family_structure = 5 if marital_status ==1 & children==0
-
-label define family_structure 1 "Single with child(ren)" 2 "Single, no child, age less than 55" 3 "Single, no child, age 55 or more" 4 "Couple with child(ren)" 5 "Couple, no child"
-label values family_structure family_structure
-label variable family_structure "Family Structure"
+	*Family structure
+	gen famstrc = !mar & children
+	replace famstrc = 2 if !mar & !children & age_cat1<=3
+	replace famstrc = 3 if !mar & !children & age_cat1>3
+	replace famstrc = 4 if mar & children 
+	replace famstrc = 5 if mar & !children 
+	label define famstrc 1 "Single with child(ren)" 2 "Single, no child, age less than 55" 3 "Single, no child, age 55 or more" 4 "Couple with child(ren)" 5 "Couple, no child"
+	label variable famstrc "Family structure"
                           
-                          
-				            //"Race" Variable//
-										
-gen race = x5909
-replace race = 1 if x5909==5
-replace race = 2 if x5909~=5
+	*Race 
+	gen race = X5909==5
+	label define race 1 "White non-Hispanic" 0 "Nonwhite or Hispanic"
+	label variable race "Race or ethnicity of respondent"
 
-label define race 1 "White non-Hispanic" 2 "Nonwhite or Hispanic"
+	*Work status
+	generate workstat = (X4106==1) //Works for someone else  
+	replace workstat = 2 if inlist(X4106, 2, 3) //Self employed
+	replace workstat = 3 if inlist(X4100,50, 52) | (X14>=65 & inlist(X4100, 21, 30, 70, 80, 97, -7)) //Retired
+	replace workstat = 4 if !workstat & x14<65 //Not working for some other reason
+	label define workstat 1 "Working for someone else" 2 "Self-Employed" 3 "Retired" 4 "Other Not Working" 
+	label variable work_status "Current work status of head"
 
-label values race race
+	*Housing status
+	gen housingstat = inlist(X508, 1, 2) | inlist(X601, 1, 2, 3) | inlist(X701, 1, 3, 4, 5, 6)				
+	label define housingstat 1 "Owner" 0 "Renter or other" 
+	label variable housingstat "Housing status"
 
-label variable race "Race or Ethnicity of Respondent"
+	*Occupation
+	gen occ = 1 if X7401
+	replace occ = 2 if inlist(X7401, 2, 3)
+	replace occ = 3 if inlist(X7401, 4, 5, 6)
+	replace occ = 4 if !X7401
+	label define occupation 1 "Managerial or professional" 2 "Technical, sales, or services" 3 "Other occupation" 4 "Retired or other not working" 
+	label variable occupation "Current occupation of head"
 
-
-                          //Current Work Status Variable//
-									 
-generate work_status = 0
-replace work_status = 1 if x4106==1
-replace work_status = 2 if x4106==2 | x4106==3 | x4106==4
-replace work_status = 3 if x4100==50 | x4100==52
-replace work_status = 3 if x4100==21 & x14>=65 | x4100==23  & x14>=65 | x4100==30 & x14>=65 | x4100==70 & x14>=65 | x4100==80 & x14>=65 | x4100==97 & x14>=65 | x4100==85 & x14>=65 | x4100== -7 & x14>=65
-replace work_status = 4 if work_status==0 & x14<65
-
-label define work_status 1 "Working for someone else" 2 "Self-Employed" 3 "Retired" 4 "Other Not Working" 
-
-label values work_status work_status
-
-label variable work_status "Current Work Status of Head"
-
-
-                            //Housing Status Variable//
-
-
-generate housing_status = 2
-replace housing_status = 1 if x508==1 | x508==2 | x601==1 | x601==2 | x601==3 | x701==1 | x701==3 | x701==4 | x701==5 | x701==6 								   
-					
-label define housing_status 1 "Owner" 2 "Renter or other" 
-
-label values housing_status housing_status
-
-label variable housing_status "Housing Status"
-
-   
-                          //Current Occupation of head//
-						   
-generate occupation = 0
-replace occupation =1 if x7401==1
-replace occupation =2 if x7401==2 | x7401==3
-replace occupation =3 if x7401==4 | x7401==5 | x7401==6
-replace occupation =4 if x7401==0
-
-label define occupation 1 "Managerial or professional" 2 "Technical, sales, or services" 3 "Other occupation" 4 "Retired or other not working" 
-
-label values occupation occupation
-
-label variable occupation "Current occupation of head"
-
-
-                         //Reasons for Saving//
-
-generate saving_reason = 0 
-
-replace saving_reason = 1 if (x3006==-2 | x3006==-1)
-
-replace saving_reason = 2 if (x3006==1 | x3006==2)
-
-replace saving_reason = 3 if (x3006==3 | x3006==5 | x3006==6)
-
-replace saving_reason = 4 if (x3006==11)
-
-replace saving_reason = 5 if (x3006==12 | x3006==13 ///
- | x3006==14 | x3006==15 | x3006==16 | x3006==27 | x3006==29 | x3006==30 ///
- | x3006==9 | x3006==18 | x3006==20 | x3006==41)
-
-replace saving_reason = 6 if (x3006==17 | x3006==22)
-
-replace saving_reason = 7 if (x3006==23 | x3006==24 | x3006==25 ///
-                            | x3006==32 | x3006==92 | x3006==93)
-							
-replace saving_reason = 8 if (x3006==21 | x3006==26 | x3006==28)
-
-replace saving_reason = 9 if (x3006==31 | x3006==33 | x3006==40 ///
-                            | x3006==90 | x3006==91 | x3006==-7)
-							
-label define saving_reason 1 "Can't Save" 2 "Education" 3 "Family" ///
-    4 "Home" 5 "Purchases" 6 "Retirement" 7 "Liquidity/Future" ///
-    8 "Investment" 9 "No Particular Reason"  
-
- label values saving_reason saving_reason
-label variable saving_reason "Reasons for Saving"							
-
-
+	*Reasons for saving
+	gen reason2save = (X3006 ==-2| X3006 == -1) 
+	replace reason2save = 2 if (X3006 | X3006 == 2)
+	replace reason2save = 3 if inlist(X3006, 3, 5, 6)
+	replace reason2save = 4 if X3006==11
+	replace reason2save = 5 if (inrange(X3006, 12, 16) | inlist(X3006, 27, 29, 30, 9, 18, 20, 41))
+	replace reason2save = 6 if inlist(X3006, 17, 22)
+	replace reason2save = 7 if inrange(X3006, 23, 25) | inlist(X3006, 32, 92, 93)
+	replace reason2save = 8 if inlist(X3006, 21, 26, 28)
+	replace reason2save = 9 if inlist(X3006, 31, 33, 40, 90, 91, -7)
+	label define reason2save 1 "Can't Save" 2 "Education" 3 "Family" ///
+		4 "Home" 5 "Purchases" 6 "Retirement" 7 "Liquidity/Future" ///
+		8 "Investment" 9 "No Particular Reason"  
+	label variable reason2save "Reasons for saving"							
 
 * "Urbanicity" and "Census Region" are not included in the public dataset
 
-**********************************************************************
-*Financial Info
-**********************************************************************
-
-                     //Income//
+*Financial info 
+	*Income
 						   
 		   //(1-Step Process for years <=2001)//
 generate income = max(0, x5729) 
