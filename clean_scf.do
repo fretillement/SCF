@@ -86,9 +86,9 @@ label var year "Survey Year"
 	generate workstat = (X4106==1) //Works for someone else  
 	replace workstat = 2 if inlist(X4106, 2, 3) //Self employed
 	replace workstat = 3 if inlist(X4100,50, 52) | (X14>=65 & inlist(X4100, 21, 30, 70, 80, 97, -7)) //Retired
-	replace workstat = 4 if !workstat & x14<65 //Not working for some other reason
+	replace workstat = 4 if !workstat & X14<65 //Not working for some other reason
 	label define workstat 1 "Working for someone else" 2 "Self-Employed" 3 "Retired" 4 "Other Not Working" 
-	label variable work_status "Current work status of head"
+	label variable workstat "Current work status of head"
 
 	*Housing status
 	gen housingstat = inlist(X508, 1, 2) | inlist(X601, 1, 2, 3) | inlist(X701, 1, 3, 4, 5, 6)				
@@ -100,8 +100,8 @@ label var year "Survey Year"
 	replace occ = 2 if inlist(X7401, 2, 3)
 	replace occ = 3 if inlist(X7401, 4, 5, 6)
 	replace occ = 4 if !X7401
-	label define occupation 1 "Managerial or professional" 2 "Technical, sales, or services" 3 "Other occupation" 4 "Retired or other not working" 
-	label variable occupation "Current occupation of head"
+	label define occ 1 "Managerial or professional" 2 "Technical, sales, or services" 3 "Other occupation" 4 "Retired or other not working" 
+	label variable occ "Current occupation of head"
 
 	*Reasons for saving
 	gen reason2save = (X3006 ==-2| X3006 == -1) 
@@ -158,343 +158,159 @@ label var year "Survey Year"
 	*gen income_normal = X5729
 		
 	*Income percentiles
-	gen inc_pctile = income, n(6)
+	pctile inc_pctile = income, n(6)
 	label define inc_pctile 1 "Less than 20" 2 "20-39.9" 3 "40-59.9" 4 "60-79.9" 5 "80-89.9"  6 "90-100"
 	label var inc_pctile "Income percentile"
 
 	*Saving habits
-	gen saving = X7510
-	replace saving = X7508 if
-
-generate saving = x7510
-replace saving = x7508 if x7508>0
-replace saving = 3 if x7510==2 & x7509==1
-replace saving = 1 if saving==2
-
-label define saving 1 "Don't Save" 3 "Save" 
-
-label values saving saving
-
-label variable saving "Did your family save?"
-
-rename saving family_saving
-
-
-                         //Savings Account//
-
-generate savings_account = max(0,x3804)+max(0,x3807)+max(0,x3810)+max(0,x3813) ///
-        +max(0,x3816)+max(0,x3818)
-
-label variable savings_account "Value of Savings Accounts"
-                          						
-				    //Do you have a Savings Account//
-						   
-generate have_savings = 0
-
-replace have_savings = 1 if savings_account~=0   
-
-label define have_savings 1 "Yes" 0 "No" 
-
-label values have_savings have_savings
-
-label variable have_savings "Do you have any Savings or Money Market Accounts?"
-
-
-                      //Checking account//
-							  
-generate checking = max(0,x3506)*(x3507==5)+max(0,x3510)*(x3511==5) ///
-      +max(0,x3514)*(x3515==5)+max(0,x3518)*(x3519==5) ///
-	  +max(0,x3522)*(x3523==5)+max(0,x3526)*(x3527==5) ///	 
-      +max(0,x3529)*(x3527==5) 
-
-label variable checking "Value of a Checking Account"
-
-               //Do you have a Checking Account//
-						   
-generate have_checking = 0  
-
-replace have_checking = 1 if checking ~=0
-
-label define have_checking 1 "Yes" 0 "No" 
-
-label values have_checking have_checking
-
-label variable have_checking "Do you have a Checking Account?"
-
-
-            //Reason for Choosing Main Checking Account//
-
-generate checking_account_reason = 10  
-
-replace checking_account_reason = 1 if x3530==3
-replace checking_account_reason = 2 if x3530==7
-replace checking_account_reason = 3 if x3530==6
-replace checking_account_reason = 4 if x3530==1
-replace checking_account_reason = 5 if x3530==11
-replace checking_account_reason = 6 if x3530==35
-replace checking_account_reason = 7 if x3530==14
-replace checking_account_reason = 8 if x3530==8
-replace checking_account_reason = 9 if x3530==9
-
-label define checking_account_reason 1 "Location" 2 "Low Fee Balance" 3 "Many Services"  4 "Recommended by Friend/Family" 5 "Personal Relationship" 6 "Connection through Work/School" 7 "Always done business there" 8 "Safety" 9 "Convenience/Direct Deposit" 10 "Other"
-
-label values checking_account_reason checking_account_reason
-
-label variable checking_account_reason "Reason For Choosing Main Checking Account"
-
-                        
-			             //Money Owed//
-					   
-					   
-generate owed_any_money = x4017   
-
-label define owed_any_money 1 "Yes" 5 "No" 
-
-label values owed_any_money owed_any_money
-
-label variable owed_any_money "Are you owed any money by friends, relatives, or others?"
-					   
-		
-		          //Other Substantial Assets//
-						 
-generate miscellaneous_assets = x4019  
-
-label define miscellaneous_assets 1 "Yes" 5 "No" 
-
-label values miscellaneous_assets miscellaneous_assets
-
-label variable miscellaneous_assets "Do you own any other Miscellaneous Assets?"
-
-
-   //Amount of Miscellaneous Assets combined (both "Money Owed" and "Other Substantial Assets")	 
-						 
-generate other_asset = x4018 + x4022 + x4026 + x4030
-
-label variable other_asset "Miscellaneous Asset Amount"		
-
-
-                        //Other Debt//
-							 
-generate other_debt = x4031  
-
-label define other_debt 1 "Yes" 5 "No" 
-
-label values other_debt other_debt
-
-label variable other_debt "Do you owe any money not recorded earlier?"                          
-
-
-
-                       // //Money Market Accounts// //
-						    
-					 //Money Market Deposit Accounts//
- 
- 
-generate mmda = max(0,x3506)*((x3507==1)*(11<=x9113<=13)) ///
-        +max(0,x3510)*((x3511==1)*(11<=x9114<=13)) ///
-        +max(0,x3514)*((x3515==1)*(11<=x9115<=13)) ///
-        +max(0,x3518)*((x3519==1)*(11<=x9116<=13)) ///
-        +max(0,x3522)*((x3523==1)*(11<=x9117<=13)) ///
-        +max(0,x3526)*((x3527==1)*(11<=x9118<=13)) ///
-        +max(0,x3529)*((x3527==1)*(11<=x9118<=13)) ///
-        +max(0,x3706)*(11<=x9131<=13)+max(0,x3711)*(11<=x9132<=13) ///
-        +max(0,x3716)*(11<=x9133<=13)+max(0,x3718)*(11<=x9133<=13) 
-
-label variable mmda "Money Market Deposit Accounts"
-
-         				 //Money Market Mutual Funds//
-
-generate mmmf = max(0,x3506)*(x3507==1)*(x9113<11|x9113>13) ///
-        +max(0,x3510)*(x3511==1)*(x9114<11|x9114>13) ///
-        +max(0,x3514)*(x3515==1)*(x9115<11|x9115>13) ///
-        +max(0,x3518)*(x3519==1)*(x9116<11|x9116>13) ///
-        +max(0,x3522)*(x3523==1)*(x9117<11|x9117>13) ///
-        +max(0,x3526)*(x3527==1)*(x9118<11|x9118>13) ///
-        +max(0,x3529)*(x3527==1)*(x9118<11|x9118>13) ///
-        +max(0,x3706)*(x9131<11|x9131>13)+max(0,x3711)*(x9132<11|x9132>13) ///
-        +max(0,x3716)*(x9133<11|x9133>13)+max(0,x3718)*(x9133<11|x9133>13) 
-
-label variable mmmf "Money Market Mutual Funds"		
- 
-                          //Combined Money Market Account Value//
-						 				 
-generate mma = mmda + mmmf
-
-label variable mma "Value of a Money Market Account"
-                                   
-               			                    
-		            //Value of a Brokerage Account//
-						  
-generate brokerage = max(0, x3930)
-label variable brokerage "Value of a Brokerage Account"
-
-                      //Have Brokerage Account//
-							
-
-generate have_brokerage_account = x3923   
-
-label define have_brokerage_account 1 "Yes" 5 "No" 
-
-label values have_brokerage_account have_brokerage_account
-
-label variable have_brokerage_account "Do you have a brokerage account?"
-
-
-                     //Trading in the Past Year//
-								
-generate trading_past_year = 1 if x3928>0
-recode trading (mis=0)
-
-label define trading_past_year 1 "Yes" 0 "No" 
-
-label values trading_past_year trading_past_year
-
-label variable trading_past_year "Have you traded in the past year?"
-             		
-
-             //All Types of Transaction Accounts (Liquid Assets)//
-
-				   
-generate liquid_accounts = 0
-replace liquid_accounts = mma+ brokerage+checking+ savings_account
-
-label variable liquid_accounts "Total Value of Transaction Accounts (Liquid Assets)"			   
+	gen famsaving = (X7510 ==3) 
+	label def famsaving 1 "Has savings" 0 "Did not save"
+	label variable famsaving "Family saving status" 
 	
+	*Savings accounts
+	gen savings_account = max(0, X3804)+max(0, X3807)+max(0, X3810)+max(0, X3813)+max(0, X3816)+max(0, X3818)
+	label var savings_account "Value of savings account" 
+    gen havesavings = (savings_account != 0)
+    label def havesavings 1 "Has savings account" 0 "No savings account"
+	label var havesavings "Family has a savings or money market account" 
+
+	*Checking accounts
+	gen checking_account = max(0, X3506)*(X3507==5) + max(0, X3510)*(X3511==5) + max(0, X3514)*(X3515==5)+ max(0, X3518)*(X3519==5) + max(0, X3522)*(X3523==5) + max(0, X3526)*(X3527==5)
+	label var checking_account "Value of checking account"
+	gen havechecking = (checking_account != 0) 
+	label define havechecking 1 "Yes" 0 "No" 
+	label var havechecking "Family has a checking account" 
+
+	*Reason for choosing main checking account
+	gen checking_account_reason = 10 
+	replace checking_account_reason = 1 if X3530==3
+	replace checking_account_reason = 2 if X3530==7
+	replace checking_account_reason = 3 if X3530==6
+	replace checking_account_reason = 4 if X3530==1
+	replace checking_account_reason = 5 if X3530==11
+	replace checking_account_reason = 6 if X3530==35
+	replace checking_account_reason = 7 if X3530==14
+	replace checking_account_reason = 8 if X3530==8
+	replace checking_account_reason = 9 if X3530==9
+	label define checking_account_reason 1 "Location" 2 "Low Fee Balance" 3 "Many Services"  4 "Recommended by Friend/Family" 5 "Personal Relationship" 6 "Connection through Work/School" 7 "Always done business there" 8 "Safety" 9 "Convenience/Direct Deposit" 10 "Other"
+	label variable checking_account_reason "Reason For choosing main checking account"
+
+    *Money owed
+	gen owedmoney = (X4017==1)
+	label define owedmoney 1 "Yes" 0 "No"
+	label var owedmoney "Household is owed money by friends, relatives, or others"
+			         
+	*Other substantial assets
+	gen miscassets = X4018 + X4022 + X4026 + X4030
+	label var miscassets "Value of miscellaneous assets" 
+	gen hasmiscassets = (X4019==1) 
+	label var hasmiscassets "Household owns miscellaneous assets"
 	
-generate have_liquid_accounts = 0
-replace have_liquid_accounts = 1 if liquid_accounts~=0  | x3501==1 | x3701==1 | x3801==1 | x3929==1  
+	*Other debt
+	gen otherdebt = (X4031 == 1)
+	label define otherdebt 1 "Yes" 0 "No" 
+	label variable otherdebt "Household owes other debt (not recorded earlier)"                          
 
-label define have_liquid_accounts 1 "Yes" 0 "No" 
+	*Money market deposit accounts
+	gen mmda = max(0, X3506)*((X3507==1)*inrange(X9113, 11, 13)) ///
+	+ max(0, X3510)*((X3511==1)*inrange(X9114, 11, 13)) /// 
+	+ max(0, X3514)*((X3515==1)*inrange(X9115, 11, 13)) ///
+	+ max(0, X3518)*((X3519==1)*inrange(X9116, 11, 13)) ///
+	+ max(0, X3522)*((X3523==1)*inrange(X9117, 11, 13)) ///	
+	+ max(0, X3526)*((X3527==1)*inrange(X9118, 11, 13)) ///
+	+ max(0, X3706)*inrange(11, X9131, 13)+max(0, X3711)*inrange(11, X9132, 13) ///
+	+ max(0, X3716)*inrange(11, X9133, 13)+max(0, X3718)*inrange(11, X9133, 13)
+	label variable mmda "Value in money market deposit accounts"
 
-label values have_liquid_accounts have_liquid_accounts
-
-label variable have_liquid_accounts "Do you have any type of a Transaction Account?"
-
-replace liquid_accounts = max(have_liquid_accounts, liquid_accounts) //Includes accounts with zero balance - they are labeled as 1//
-
-
-
-                      //Certificates of Deposit//
-
-generate cds =  max(0, x3721)
-label variable cds "Value of Certificates of Deposit"
-							  							  
-				  //Have Certificates of Deposits//     
-
-generate have_cd = x3719   
-
-label define have_cd 1 "Yes" 5 "No" 
-
-label values have_cd have_cd
-
-label variable have_cd "Do you have any Certificates of Deposits?"
-							  
-							  
-					 //Value of Mutual Funds// 
-							
-
-generate stock_mutual_funds = max(0, x3822) if x3821==1
-recode stock_mutual_funds (mis=0)
-
-generate taxfree_bond_mutual_funds = max(0, x3824) if x3823==1
-recode taxfree_bond_mutual_funds (mis=0)
-
-generate govt_bond_mutual_funds = max(0, x3826) if x3825==1
-recode govt_bond_mutual_funds (mis=0)
-
-generate other_bond_mutual_funds = max(0, x3828) if x3827==1
-recode other_bond_mutual_funds (mis=0)
-
-generate combination_mutual_funds = max(0, x3830) if x3829==1
-recode combination_mutual_funds (mis=0)
-
-
-generate mutual_funds = stock_mutual_funds + taxfree_bond_mutual_funds + govt_bond_mutual_funds + other_bond_mutual_funds + combination_mutual_funds
-
-label variable mutual_funds "Total Value of Mutual Funds"
-                             
-					     //Mutual Funds//
-																
-generate have_mutual_funds = 0
-
-replace have_mutual_funds = 1 if mutual_funds~=0  
-
-label define have_mutual_funds 1 "Yes" 0 "No" 
-
-label values have_mutual_funds have_mutual_funds
-
-label variable have_mutual_funds "Do you have any Mutual Funds or Hedge Funds?"
-
-
-                //Value of Stocks (and the number of Companies)//
-
-generate stocks = max(0, x3915)
-
-label variable stocks "Total Value of Stocks"
-
-generate n_stocks = x3914
-
-label variable n_stocks "Number of Companies in which Hold Stock"							
-							
-                     //Publicly Traded Stock//										 
-										 
-generate have_public_stock = x3913   
-
-label define have_public_stock 1 "Yes" 5 "No" 
-
-label values have_public_stock have_public_stock
-
-label variable have_public_stock "Do you own any publicly traded stock?"																	
-							
-							  
-           //Value of Bonds (excluding bond funds and savings bonds)//
-
-					  
-generate taxexempt_bonds = x3910 
-recode taxexempt_bonds (mis=0)
+	*Money market mutual funds
+	generate mmmf = max(0,X3506)*(X3507==1)*(X9113<11|X9113>13) ///
+        +max(0,X3510)*(X3511==1)*(X9114<11|X9114>13) ///
+        +max(0,X3514)*(X3515==1)*(X9115<11|X9115>13) ///
+        +max(0,X3518)*(X3519==1)*(X9116<11|X9116>13) ///
+        +max(0,X3522)*(X3523==1)*(X9117<11|X9117>13) ///
+        +max(0,X3526)*(X3527==1)*(X9118<11|X9118>13) ///
+        +max(0,X3529)*(X3527==1)*(X9118<11|X9118>13) ///
+        +max(0,X3706)*(X9131<11|X9131>13)+max(0,X3711)*(X9132<11|X9132>13) ///
+        +max(0,X3716)*(X9133<11|X9133>13)+max(0,X3718)*(X9133<11|X9133>13) 
+	label variable mmmf "Value in money market mutual funds"		
  
-generate mortgagebacked_bonds = x3906
-recode mortgagebacked_bonds (mis=0)
+	*Total money market account value
+	gen mma = mmda + mmmf
+	label var mma "Value of money market account" 
 
-generate govt_bonds = x3908
-recode govt_bonds (mis=0)
+	*Brokerage account
+	gen brokerage = max(0, X3930) 
+	label var brokerage "Value of brokerage account"
+	gen havebrokerage = X3923==1
+	label define havebrokerage 1 "Yes" 0 "No" 
+	label var havebrokerage "Household has brokerage account"
+	
+	*Past year trading
+	gen trading_pastyr = X3928>0 
+	recode trading_pastyr (mis = 0)
+	label define trading_pastyr 1 "Yes" 0 "No" 
+	label var trading_pastyr "Houshold traded in the past year" 
+	
+	*All types of transaction accounts (liquid assets)
+	gen lqacc = mma + brokerage + checking_account + savings_account
+	label var lqacc = "Total value of transaction accounts (liquid assets)" 
+	gen have_lqacc = (lqacc != 0) | inlist(1, X3501, X3701, X3801, X3929)
+	label define have_lqacc 1 "Yes" 0 "No" 
+	label variable have_lqacc "Household has any type of transaction account"
+	replace lqacc = max(have_lqacc, lqacc) //Includes accounts with zero balance - they are labeled as 1//
 
-generate corporate_and_foreign_bonds = x7634+x7633
-recode corporate_and_foreign_bonds (mis=0)
+	*CDs (Certificates of Deposit)
+	gen cds = max(0, X3721) 
+	label var cds "Value of CDs"
+	gen havecd = (X3719==1) 
+	label var havecd "Household has certificates of deposit" 
+	
+	*Value of mutual funds
+	gen mf_stock = max(0, X3822) if X3821
+	gen mf_taxfreebond = max(0, X3822) if X3823						
+	gen mf_govbond = max(0, X3826) if X3825
+	gen mf_otherbond = max(0, X3828) if X3827
+	gen mf_combo = max(0, X3830) if X3829
+	recode mf_stock mf_taxfreebond mf_govbond mf_otherbond mf_combo (mis = 0) 
+	gen mf = mf_stock + mf_taxfreebond + mf_govbond mf_otherbond + mf_combo 
+	label var mf "Total value of mutual funds" 
+	gen havemf = mf != 0
+	label define havemf 1 "Yes" 0 "No" 
+	label var mf "House hold has mutual funds or hedge funds" 
 
-generate bonds = taxexempt_bonds + mortgagebacked_bonds + govt_bonds + corporate_and_foreign_bonds
-label variable bonds "Total Value of Bonds"					  
-                                              
-					     //Have Bonds other than Savings Bonds//
-									 									 
-generate have_other_bonds = x3903   
+	*Value of stocks and number of companies 
+	gen stocks = max(0, X3915)
+	label var stocks "Total value of stocks" 
+	generate nstocks = X3914
+	label var nstocks "Number of companies in which family holds stock" 
+	
+	*Publicly traded stock
+	gen havepublicstock = X3913 == 1
+	label define havepublicstock 1 "Yes" 0 "No" 
+	label var havepublicstock "Household owns publicly traded stock" 
+	
+	*Value of bonds (excluding bond funds and savings bonds)
+	gen bonds_taxexempt = X3910
+	gen bonds_mortgagebacked = X3906
+	gen bonds_gov = X3908
+	gen bonds_corpforeign = X7634 + X7633
+	recode bonds_taxexempt bonds_mortgagebacked bonds_gov bonds_corpforeign (mis = 0) 
+	gen bonds = bonds_taxexempt + bonds_mortgagebacked + bonds_gov + bonds_corpforeign
+	label var bonds "Total value of bonds" 
+	
+	gen haveotherbonds = (X3903==1) 
+	label def haveotherbonds 1 "Yes" 0 "No"
+	label var haveotherbonds "Family owns corporate, municpal, or gov bonds" 
 
-label define have_other_bonds 1 "Yes" 5 "No" 
+	*Retiremement account totals 
+	generate ira_keogh = max(0, X3610)+ max(0, X3620)+ max(0, X3630)
+	label ira_keogh "Value of IRA/Keogh retirement account"
+	gen have_ira_keogh = X3601==1
+	label define have_ira_keogh 1 "Yes" 0 "No" 
+	label variable have_ira_keogh "Household has an IRA/Keogh account"    
 
-label values have_other_bonds have_other_bonds
-
-label variable have_other_bonds "Do you have any other corporate, municipal, or government bonds?" 
-			
-							  
-			    	  //Retirement Account Total//
-							  
-		    	  //IRA/Keogh Retirement Account// 
-						  
-generate ira_keogh = max(0, x3610)+ max(0, x3620)+ max(0, x3630)
-label variable ira_keogh "IRA/Keogh Retirement Account"
-                     
-
-                   //Have IRA and Keogh Accounts//
-
-generate have_ira_keogh = x3601   
-
-label define have_ira_keogh 1 "Yes" 5 "No" 
-
-label values have_ira_keogh have_ira_keogh
-
-label variable have_ira_keogh "Do you have any IRA or Keogh Account?"                                                         
-
-
+	*Future pensions
+	gen f
                           //Future Pensions//
 								 
 generate future_pension = max(0, x5604) + max(0, x5612) + max(0, x5620) + max(0, x5628) + max(0, x5636) + max(0, x5644)
