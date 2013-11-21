@@ -309,33 +309,34 @@ label var year "Survey Year"
 	label define have_ira_keogh 1 "Yes" 0 "No" 
 	label variable have_ira_keogh "Household has an IRA/Keogh account"    
 
-	*Future pensions
-	gen f
-                          //Future Pensions//
-								 
-generate future_pension = max(0, x5604) + max(0, x5612) + max(0, x5620) + max(0, x5628) + max(0, x5636) + max(0, x5644)
-label variable future_pension "Future Pensions"
+	*Total future pensions
+	gen pension_future = max(0, X5604) + max(0, X5612) + max(0, X5620) + max(0, X5628) + max(0, X5636) + max(0, X5644)
+	label var pension_future "Future pension" 
+	
+	*Pension contributions
+	gen penj1 = X
                      
 
                              //Job Pension// 
+gen job_pension1 = 0 
+gen job_pension1 = X4226 if inlist(X4216, 1, 2, 7, 11, 12, 13)|inlist(1, X4227, X4231)
+replace job_pension1 = 0 if X4226 == -1
 
-generate job_pension1 = 0
-replace job_pension1 = x4226 if (x4216==1 | x4216==2 | x4216==7 | x4216==11 ///
-   | x4216==12 | x4216==18 | x4227==1 | x4231==1)
-replace job_pension1 = 0 if x4226==-1
+gen job_pension2 = 0
+replace job_pension2 = X4326 if inlist(X4316, 1, 2, 7, 11, 12, 13)|inlist(1, X4327, X4331)
+replace job_pension2 = 0 if X4326 == -1
 
-generate job_pension2 = 0
-replace job_pension2 = x4326 if (x4316==1 | x4316==2 | x4316==7 | x4316==11 ///
-   | x4316==12 | x4316==18 | x4327==1 | x4331==1)
-replace job_pension2 = 0 if x4326==-1
+gen job_pension3 = 0 
+replace job_pension3 = X4426 if inlist(X4416, 1, 2, 7, 11, 12, 13)|inlist(1, X4427, X4431)
+replace job_pension3 = 0 if X4426 == -1
 
-generate job_pension3 = 0
-replace job_pension3 = x4426 if (x4416==1 | x4416==2 | x4416==7 | x4416==11 ///
-   | x4416==12 | x4416==18 | x4427==1 | x4431==1)
-replace job_pension3 = 0 if x4426==-1
+gen job_pension4 = 0
+replace job_pension4 = X4826 if inlist(X4816, 1, 2, 7, 11, 12, 13)|inlist(1, X4827, X4831)
+replace job_pension4 = 0 if X4826 == -1
 
-generate job_pension4 = 0
-replace job_pension4 = x4826 if (x4816==1 | x4816==2 | x4816==7 | x4816==11 ///
+
+
+(x4816==1 | x4816==2 | x4816==7 | x4816==11 ///
    | x4816==12 | x4816==18 | x4827==1 | x4831==1)
 replace job_pension4 = 0 if x4826==-1
 
