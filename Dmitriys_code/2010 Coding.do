@@ -12,9 +12,9 @@ gen id = _n
 				
                        //Frequency Weights (Already generated in SCF 2007//
 					   
-generate frequencyweight = X42001/5			
-label var frequencyweight fwt 		   
-generate frequency_weight_round = round(frequencyweight)				   
+generate fwt = X42001/5			
+label var fwt fwt 		   
+*generate frequency_weight_round = round(frequencyweight)				   
 
 
 **************************************************************************
@@ -34,7 +34,7 @@ label variable age "Age of head (years)"
 
 
                          //Another Separation of the "Age of Head" variable//
-						 
+						
 generate age2 = X14
 
 recode age2 0/24 = 1 25/34 = 2 35/44=3 45/54=4 55/64=5 65/74=6 75/max=7
@@ -1281,7 +1281,7 @@ label variable homeownership_class "Homeownership Class"
 
 
 
-                      //Other Residential Real Estate//
+				//Other Residential Real Estate//
 						  
 generate other_residential_real_estate = max(X1405, X1409) + ///
 max(X1505, X1509) + max(0, X1619) 
